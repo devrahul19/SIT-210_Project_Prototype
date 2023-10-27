@@ -1,10 +1,14 @@
 #include <TinyGPS++.h>
+#include <ArduinoHttpClient.h>
 
 // Define the GPS module's serial connection (Serial1 for Arduino Uno)
 #define GPS_SERIAL Serial1
 
 // Create a TinyGPS++ object
 TinyGPSPlus gps;
+
+// Create a TinyGPS++ object
+HttpClient http;
 
 // Button pin
 const int buttonPin = 7;
@@ -45,6 +49,22 @@ void loop() {
 }
 
 void sendLocationToIFTTT(float lat, float lon) {
-  // Your IFTTT integration code to send location data
-  // This depends on your specific IFTTT applet and its setup
+  http.beginRequest(url, "application/json");
+  http.sendHeader("Content-Type", "application/json");
+  int httpCode = http.POST(jsonPayload);
+
+  // Check the response and handle errors if needed
+  if (httpCode > 0) {
+    if (httpCode == HTTP_SUCCESS) {
+      Serial.println("Location sent to IFTTT successfully!");
+    } else {
+      Serial.print("HTTP Error: ");
+      Serial.println(httpCode);
+    }
+  } else {
+    Serial.println("Failed to connect to IFTTT");
+  }
+
+  // Close the connection
+  http.end();
 }
